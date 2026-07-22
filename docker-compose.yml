@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  postgres:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: jobready_postgres_db:latest
+    container_name: jobready_postgres_db
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - jobready_network
+
+networks:
+  jobready_network:
+    name: jobready_network
+    driver: bridge
+
+volumes:
+  postgres_data:
