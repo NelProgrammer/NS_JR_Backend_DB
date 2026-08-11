@@ -367,7 +367,24 @@ CREATE TABLE public.resume_ui_settings (
     resume_id character varying NOT NULL,
     profile_id character varying NOT NULL,
     settings_json jsonb NOT NULL,
+    tech_format character varying DEFAULT 'bullet',
+    soft_format character varying DEFAULT 'bullet',
+    certs_format character varying DEFAULT 'bullet',
+    non_acad_certs_format character varying DEFAULT 'bullet',
+    systems_used_format character varying DEFAULT 'bullet',
+    address_format character varying DEFAULT 'bullet',
+    layout character varying DEFAULT 'professional',
+    placeholders_json jsonb DEFAULT '{}'::jsonb,
     last_modified timestamp without time zone NOT NULL
+);
+
+CREATE TABLE public.resume_timestamps (
+    id character varying NOT NULL,
+    resume_id character varying NOT NULL,
+    profile_id character varying NOT NULL,
+    field_name character varying NOT NULL,
+    last_modified timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at_ms bigint NOT NULL
 );
 
 
@@ -754,6 +771,7 @@ CREATE TABLE public.targeted_resume (
     skills_visibility jsonb NOT NULL,
     experience_visibility jsonb NOT NULL,
     education_visibility jsonb NOT NULL,
+    tertiary_education_visibility jsonb NOT NULL DEFAULT '{}'::jsonb,
     references_visibility jsonb NOT NULL,
     languages_visibility jsonb NOT NULL,
     last_modified timestamp without time zone NOT NULL
