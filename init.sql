@@ -150,13 +150,13 @@ COMMENT ON COLUMN public.profiles.created_at IS 'Timestamp of account creation';
 --
 
 CREATE TABLE public.recruitment_shares (
-    id character varying NOT NULL,
-    resume_id character varying NOT NULL,
-    profile_id character varying NOT NULL,
-    allow_all boolean NOT NULL,
-    recruiter_ids jsonb,
-    section_shares jsonb NOT NULL,
-    last_modified double precision NOT NULL
+    id character varying NOT NULL PRIMARY KEY,
+    resume_id character varying NOT NULL REFERENCES public.resumes(id) ON DELETE CASCADE,
+    profile_id character varying NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    allow_all boolean NOT NULL DEFAULT false,
+    recruiter_ids jsonb DEFAULT '[]'::jsonb,
+    section_shares jsonb NOT NULL DEFAULT '{"personal_details":true,"experience":true,"education":true,"skills":true,"references":false}'::jsonb,
+    last_modified timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 
@@ -364,18 +364,12 @@ COMMENT ON COLUMN public.resume_references.sort_order IS 'Sorting priority';
 --
 
 CREATE TABLE public.resume_ui_settings (
-    resume_id character varying NOT NULL,
-    profile_id character varying NOT NULL,
-    settings_json jsonb NOT NULL,
-    tech_format character varying DEFAULT 'bullet',
-    soft_format character varying DEFAULT 'bullet',
-    certs_format character varying DEFAULT 'bullet',
-    non_acad_certs_format character varying DEFAULT 'bullet',
-    systems_used_format character varying DEFAULT 'bullet',
-    address_format character varying DEFAULT 'bullet',
-    layout character varying DEFAULT 'professional',
-    placeholders_json jsonb DEFAULT '{}'::jsonb,
-    last_modified timestamp without time zone NOT NULL
+    resume_id character varying NOT NULL PRIMARY KEY REFERENCES public.resumes(id) ON DELETE CASCADE,
+    profile_id character varying NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    section_formats jsonb NOT NULL DEFAULT '{"tech":"bullet","soft":"bullet","certs":"bullet","non_acad_certs":"bullet","systems_used":"bullet","address":"bullet"}'::jsonb,
+    layout character varying(50) NOT NULL DEFAULT 'professional',
+    placeholders jsonb NOT NULL DEFAULT '{}'::jsonb,
+    last_modified timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE public.resume_timestamps (
@@ -1252,5 +1246,121 @@ ALTER TABLE ONLY public.targeted_resume
 --
 -- PostgreSQL database dump complete
 --
+
+--
+-- SEED DATA: 3 to 4 items per multi-value section and midway supporting tables
+--
+
+INSERT INTO public.users (id, email, hashed_password)
+VALUES ('user_demo_101', 'candidate@jobready.com', '$2b$12$eImiTXuWVxfM37uY4JANjO5E.yvH3zJ2E5A8e0F7K6L9M0N1O2P3Q')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.profiles (id, email, user_id, social_id, provider)
+VALUES ('prof_demo_101', 'candidate@jobready.com', 'user_demo_101', 'social_google_101', 'google')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.resumes (id, profile_id, name, first_name, surname, email_contact, professional_summary, layout, export_format, languages_json, skills_json, education_highschool_json, last_modified)
+VALUES (
+    'res_master_101',
+    'prof_demo_101',
+    'Primary Master CV',
+    'Alexander',
+    'Vance',
+    'alexander.vance@jobready.com',
+    'Senior Full-Stack Engineer with 8+ years experience building mobile & web platforms.',
+    'professional',
+    'pdf',
+    '[{"id":"lang_501","language":"English","proficiency":"Native"},{"id":"lang_502","language":"Afrikaans","proficiency":"Fluent"},{"id":"lang_503","language":"isiZulu","proficiency":"Basic"}]'::jsonb,
+    '[{"id":"sk_201","name":"React Native","category":"Technical"},{"id":"sk_202","name":"Python FastAPI","category":"Technical"},{"id":"sk_203","name":"PostgreSQL SQL","category":"Technical"},{"id":"sk_204","name":"Docker CI/CD","category":"Technical"}]'::jsonb,
+    '{"school":"Pretoria High School","matricYear":2014,"subjects":["Mathematics","Physical Sciences","IT"]}'::jsonb,
+    CURRENT_TIMESTAMP
+)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.resume_work_experiences (id, resume_id, company, job_title, start_date, end_date, is_current, description, sort_order)
+VALUES 
+('exp_101', 'res_master_101', 'Apex Tech Solutions', 'Lead React Native Architect', '2022-01-01', 'Present', true, 'Architected cross-platform mobile suite serving 500k active users.', 1),
+('exp_102', 'res_master_101', 'CloudScale Global', 'Senior Systems Engineer', '2019-03-01', '2021-12-31', false, 'Designed distributed microservices handling 10k req/sec.', 2),
+('exp_103', 'res_master_101', 'DevCore Agency', 'Full-Stack Developer', '2017-06-01', '2019-02-28', false, 'Delivered 15 client web applications on Next.js & Python.', 3),
+('exp_104', 'res_master_101', 'InnoLab Incubator', 'Junior Software Analyst', '2015-01-15', '2017-05-30', false, 'Automated CI/CD deployment scripts and regression suites.', 4)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.resume_education_tertiary (id, resume_id, institution, qualification_name, nqf_level, year, completed, key_modules)
+VALUES 
+('edu_301', 'res_master_101', 'University of Pretoria', 'BSc Computer Science', 'Level 7', 2018, true, '["Data Structures","Algorithms","Database Systems"]'::jsonb),
+('edu_302', 'res_master_101', 'University of Witwatersrand', 'PostGrad Cert in Software Architecture', 'Level 8', 2020, true, '["Distributed Systems","Cloud Security"]'::jsonb),
+('edu_303', 'res_master_101', 'AWS Certification Authority', 'AWS Solutions Architect Associate', 'Level 7', 2022, true, '["Serverless","IAM","CloudFormation"]'::jsonb)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.resume_references (id, resume_id, name, org, relation, phone, email, sort_order)
+VALUES 
+('ref_401', 'res_master_101', 'Sarah Jenkins', 'Apex Tech Solutions', 'VP of Engineering', '+27821112222', 'sjenkins@apextech.co.za', 1),
+('ref_402', 'res_master_101', 'Marcus Brody', 'CloudScale Global', 'Engineering Manager', '+27833334444', 'mbrody@cloudscale.com', 2),
+('ref_403', 'res_master_101', 'Dr. David Ross', 'University of Pretoria', 'Academic Supervisor', '+27124201111', 'dross@cs.up.ac.za', 3),
+('ref_404', 'res_master_101', 'Elena Rostova', 'DevCore Agency', 'Lead Architect', '+27845556666', 'elena@devcore.io', 4)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.targeted_resume (id, primary_resume_id, profile_id, name, personal_details_visibility, skills_visibility, experience_visibility, education_visibility, tertiary_education_visibility, references_visibility, languages_visibility, last_modified)
+VALUES 
+(
+    'target_101',
+    'res_master_101',
+    'prof_demo_101',
+    'Senior Mobile Architect Targeted CV',
+    '{"idNumber":false,"demographics":true}'::jsonb,
+    '{"sk_201":true,"sk_202":true,"sk_203":true,"sk_204":false}'::jsonb,
+    '{"exp_101":true,"exp_102":true,"exp_103":false,"exp_104":true}'::jsonb,
+    '{"edu_hs_1":true}'::jsonb,
+    '{"edu_301":true,"edu_302":true,"edu_303":false}'::jsonb,
+    '{"ref_401":true,"ref_402":false,"ref_403":true,"ref_404":true}'::jsonb,
+    '{"lang_501":true,"lang_502":true,"lang_503":false}'::jsonb,
+    CURRENT_TIMESTAMP
+),
+(
+    'target_102',
+    'res_master_101',
+    'prof_demo_101',
+    'DevOps & Cloud Specialist Targeted CV',
+    '{"idNumber":true,"demographics":true}'::jsonb,
+    '{"sk_201":false,"sk_202":true,"sk_203":true,"sk_204":true}'::jsonb,
+    '{"exp_101":false,"exp_102":true,"exp_103":false,"exp_104":true}'::jsonb,
+    '{"edu_hs_1":true}'::jsonb,
+    '{"edu_301":true,"edu_302":false,"edu_303":true}'::jsonb,
+    '{"ref_401":false,"ref_402":true,"ref_403":true,"ref_404":false}'::jsonb,
+    '{"lang_501":true,"lang_502":false,"lang_503":true}'::jsonb,
+    CURRENT_TIMESTAMP
+)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.resume_ui_settings (resume_id, profile_id, section_formats, layout, placeholders, last_modified)
+VALUES (
+    'res_master_101',
+    'prof_demo_101',
+    '{"tech":"bullet","soft":"bullet","certs":"bullet","non_acad_certs":"bullet","systems_used":"bullet","address":"bullet"}'::jsonb,
+    'professional',
+    '{"tech":"- {SkillName} ({Proficiency})","soft":"- {SkillName}","certs":"- {CertName} ({Year})"}'::jsonb,
+    CURRENT_TIMESTAMP
+)
+ON CONFLICT (resume_id) DO NOTHING;
+
+INSERT INTO public.recruitment_shares (id, resume_id, profile_id, allow_all, recruiter_ids, section_shares, last_modified)
+VALUES (
+    'share_101',
+    'res_master_101',
+    'prof_demo_101',
+    true,
+    '["rec_901","rec_902"]'::jsonb,
+    '{"personal_details":true,"experience":true,"education":true,"skills":true,"references":false}'::jsonb,
+    CURRENT_TIMESTAMP
+)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.resume_timestamps (id, resume_id, profile_id, field_name, last_modified, updated_at_ms)
+VALUES 
+('ts_101', 'res_master_101', 'prof_demo_101', 'experience.exp_101', CURRENT_TIMESTAMP, 1786476000000),
+('ts_102', 'res_master_101', 'prof_demo_101', 'experience.exp_102', CURRENT_TIMESTAMP, 1786476000000),
+('ts_103', 'res_master_101', 'prof_demo_101', 'skills.sk_201', CURRENT_TIMESTAMP, 1786476000000),
+('ts_104', 'res_master_101', 'prof_demo_101', 'education.edu_301', CURRENT_TIMESTAMP, 1786476000000)
+ON CONFLICT (id) DO NOTHING;
 
 
