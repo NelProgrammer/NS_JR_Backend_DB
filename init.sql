@@ -155,7 +155,13 @@ CREATE TABLE public.recruitment_shares (
     profile_id character varying NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     allow_all boolean NOT NULL DEFAULT false,
     recruiter_ids jsonb DEFAULT '[]'::jsonb,
-    section_shares jsonb NOT NULL DEFAULT '{"personal_details":true,"experience":true,"education":true,"skills":true,"references":false}'::jsonb,
+    personal_details_share jsonb NOT NULL DEFAULT '{}'::jsonb,
+    skills_share jsonb NOT NULL DEFAULT '{}'::jsonb,
+    experience_share jsonb NOT NULL DEFAULT '{}'::jsonb,
+    education_share jsonb NOT NULL DEFAULT '{}'::jsonb,
+    tertiary_education_share jsonb NOT NULL DEFAULT '{}'::jsonb,
+    references_share jsonb NOT NULL DEFAULT '{}'::jsonb,
+    languages_share jsonb NOT NULL DEFAULT '{}'::jsonb,
     last_modified timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -366,8 +372,14 @@ COMMENT ON COLUMN public.resume_references.sort_order IS 'Sorting priority';
 CREATE TABLE public.resume_ui_settings (
     resume_id character varying NOT NULL PRIMARY KEY REFERENCES public.resumes(id) ON DELETE CASCADE,
     profile_id character varying NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-    section_formats jsonb NOT NULL DEFAULT '{"tech":"bullet","soft":"bullet","certs":"bullet","non_acad_certs":"bullet","systems_used":"bullet","address":"bullet"}'::jsonb,
     layout character varying(50) NOT NULL DEFAULT 'professional',
+    personal_details_settings jsonb NOT NULL DEFAULT '{"address_format":"bullet"}'::jsonb,
+    skills_settings jsonb NOT NULL DEFAULT '{"tech_format":"bullet","soft_format":"bullet","certs_format":"bullet","systems_used_format":"bullet"}'::jsonb,
+    experience_settings jsonb NOT NULL DEFAULT '{"format":"bullet"}'::jsonb,
+    education_settings jsonb NOT NULL DEFAULT '{"format":"bullet"}'::jsonb,
+    tertiary_education_settings jsonb NOT NULL DEFAULT '{"format":"bullet"}'::jsonb,
+    references_settings jsonb NOT NULL DEFAULT '{"format":"bullet"}'::jsonb,
+    languages_settings jsonb NOT NULL DEFAULT '{"format":"bullet"}'::jsonb,
     placeholders jsonb NOT NULL DEFAULT '{}'::jsonb,
     last_modified timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -1332,25 +1344,37 @@ VALUES
 )
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO public.resume_ui_settings (resume_id, profile_id, section_formats, layout, placeholders, last_modified)
+INSERT INTO public.resume_ui_settings (resume_id, profile_id, layout, personal_details_settings, skills_settings, experience_settings, education_settings, tertiary_education_settings, references_settings, languages_settings, placeholders, last_modified)
 VALUES (
     'res_master_101',
     'prof_demo_101',
-    '{"tech":"bullet","soft":"bullet","certs":"bullet","non_acad_certs":"bullet","systems_used":"bullet","address":"bullet"}'::jsonb,
     'professional',
+    '{"address_format":"bullet"}'::jsonb,
+    '{"tech_format":"bullet","soft_format":"bullet","certs_format":"bullet","systems_used_format":"bullet"}'::jsonb,
+    '{"format":"bullet"}'::jsonb,
+    '{"format":"bullet"}'::jsonb,
+    '{"format":"bullet"}'::jsonb,
+    '{"format":"bullet"}'::jsonb,
+    '{"format":"bullet"}'::jsonb,
     '{"tech":"- {SkillName} ({Proficiency})","soft":"- {SkillName}","certs":"- {CertName} ({Year})"}'::jsonb,
     CURRENT_TIMESTAMP
 )
 ON CONFLICT (resume_id) DO NOTHING;
 
-INSERT INTO public.recruitment_shares (id, resume_id, profile_id, allow_all, recruiter_ids, section_shares, last_modified)
+INSERT INTO public.recruitment_shares (id, resume_id, profile_id, allow_all, recruiter_ids, personal_details_share, skills_share, experience_share, education_share, tertiary_education_share, references_share, languages_share, last_modified)
 VALUES (
     'share_101',
     'res_master_101',
     'prof_demo_101',
     true,
     '["rec_901","rec_902"]'::jsonb,
-    '{"personal_details":true,"experience":true,"education":true,"skills":true,"references":false}'::jsonb,
+    '{"address":true}'::jsonb,
+    '{"sk_201":true,"sk_202":true,"sk_203":true,"sk_204":false}'::jsonb,
+    '{"exp_101":true,"exp_102":true,"exp_103":false,"exp_104":true}'::jsonb,
+    '{"edu_hs_1":true}'::jsonb,
+    '{"edu_301":true,"edu_302":true,"edu_303":false}'::jsonb,
+    '{"ref_401":false,"ref_402":false,"ref_403":false,"ref_404":false}'::jsonb,
+    '{"lang_501":true,"lang_502":true,"lang_503":false}'::jsonb,
     CURRENT_TIMESTAMP
 )
 ON CONFLICT (id) DO NOTHING;
