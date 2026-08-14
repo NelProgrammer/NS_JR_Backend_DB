@@ -227,7 +227,7 @@ CREATE TABLE public.resume_education_tertiary (
     institution character varying,
     qualification_name character varying,
     nqf_level character varying,
-    year integer,
+    year character varying,
     completed boolean NOT NULL,
     key_modules jsonb NOT NULL
 );
