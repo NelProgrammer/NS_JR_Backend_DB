@@ -227,7 +227,7 @@ CREATE TABLE public.resume_education_tertiary (
     institution character varying,
     qualification_name character varying,
     nqf_level character varying,
-    year character varying,
+    date_obtained date,
     completed boolean NOT NULL,
     key_modules jsonb NOT NULL
 );
@@ -271,10 +271,10 @@ COMMENT ON COLUMN public.resume_education_tertiary.nqf_level IS 'South African N
 
 
 --
--- Name: COLUMN resume_education_tertiary.year; Type: COMMENT; Schema: public; Owner: postgres
+-- Name: COLUMN resume_education_tertiary.date_obtained; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.resume_education_tertiary.year IS 'Graduation or completion year';
+COMMENT ON COLUMN public.resume_education_tertiary.date_obtained IS 'Graduation or completion date (YYYY-MM-DD)';
 
 
 --
