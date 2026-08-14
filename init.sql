@@ -432,7 +432,7 @@ CREATE TABLE public.resume_work_experiences (
     id character varying NOT NULL,
     resume_id character varying NOT NULL,
     start_date date,
-    end_date character varying,
+    end_date date,
     organization character varying,
     department character varying,
     role character varying,
@@ -440,6 +440,17 @@ CREATE TABLE public.resume_work_experiences (
     systems_used character varying,
     achievements text,
     sort_order integer NOT NULL
+);
+
+CREATE TABLE public.resume_education_professional_certifications (
+    id character varying NOT NULL PRIMARY KEY,
+    resume_id character varying NOT NULL REFERENCES public.resumes(id) ON DELETE CASCADE,
+    name character varying,
+    institution character varying,
+    date_obtained date,
+    cert_number character varying,
+    expiry_date date,
+    sort_order integer NOT NULL DEFAULT 0
 );
 
 
