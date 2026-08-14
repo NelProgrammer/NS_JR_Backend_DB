@@ -431,7 +431,7 @@ COMMENT ON COLUMN public.resume_ui_settings.last_modified IS 'Sync timestamp (Un
 CREATE TABLE public.resume_work_experiences (
     id character varying NOT NULL,
     resume_id character varying NOT NULL,
-    start_date character varying,
+    start_date date,
     end_date character varying,
     organization character varying,
     department character varying,
