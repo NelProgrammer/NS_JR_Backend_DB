@@ -558,6 +558,7 @@ CREATE TABLE public.resumes (
     motorcycle_license character varying,
     gender character varying,
     race character varying,
+    disability character varying,
     nationality character varying,
     criminal_record boolean NOT NULL,
     criminal_details text,
@@ -565,6 +566,7 @@ CREATE TABLE public.resumes (
     languages_json jsonb NOT NULL,
     skills_json jsonb NOT NULL,
     education_highschool_json jsonb NOT NULL,
+    addresses_json jsonb NOT NULL DEFAULT '[]'::jsonb,
     layout character varying NOT NULL,
     export_format character varying NOT NULL
 );
@@ -1282,7 +1284,11 @@ INSERT INTO public.profiles (id, email, user_id, social_id, provider)
 VALUES ('prof_demo_101', 'candidate@jobready.com', 'user_demo_101', 'social_google_101', 'google')
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO public.resumes (id, profile_id, name, first_name, surname, email_contact, professional_summary, layout, export_format, languages_json, skills_json, education_highschool_json, last_modified)
+INSERT INTO public.resumes (
+    id, profile_id, name, first_name, surname, email_contact, professional_summary,
+    layout, export_format, languages_json, skills_json, education_highschool_json,
+    addresses_json, disability, criminal_record, last_modified
+)
 VALUES (
     'res_master_101',
     'prof_demo_101',
@@ -1293,26 +1299,29 @@ VALUES (
     'Senior Full-Stack Engineer with 8+ years experience building mobile & web platforms.',
     'professional',
     'pdf',
-    '[{"id":"lang_501","language":"English","proficiency":"Native"},{"id":"lang_502","language":"Afrikaans","proficiency":"Fluent"},{"id":"lang_503","language":"isiZulu","proficiency":"Basic"}]'::jsonb,
-    '[{"id":"sk_201","name":"React Native","category":"Technical"},{"id":"sk_202","name":"Python FastAPI","category":"Technical"},{"id":"sk_203","name":"PostgreSQL SQL","category":"Technical"},{"id":"sk_204","name":"Docker CI/CD","category":"Technical"}]'::jsonb,
-    '{"school":"Pretoria High School","matricYear":2014,"subjects":["Mathematics","Physical Sciences","IT"]}'::jsonb,
+    '[{"id":"lang_501","Language":"English","proficiency":"Native","visible":true},{"id":"lang_502","Language":"Afrikaans","proficiency":"Fluent","visible":true},{"id":"lang_503","Language":"isiZulu","proficiency":"Basic","visible":true}]'::jsonb,
+    '{"Tech":[{"id":"sk_201","name":"React Native","visible":true},{"id":"sk_202","name":"Python FastAPI","visible":true},{"id":"sk_203","name":"PostgreSQL SQL","visible":true},{"id":"sk_204","name":"Docker CI/CD","visible":true}],"Soft":[]}'::jsonb,
+    '{"Province Department":"Gauteng","Year Completed":"2014","Highest Grade Passed":"Grade 12 / Matric","visible":true}'::jsonb,
+    '[{"id":"addr_101","addressType":"Home / Physical","streetAddress":"142 Commissioner Street","cityOrTown":"Pretoria","province":"Gauteng","postalCode":"0002","visible":true}]'::jsonb,
+    'None',
+    false,
     CURRENT_TIMESTAMP
 )
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO public.resume_work_experiences (id, resume_id, company, job_title, start_date, end_date, is_current, description, sort_order)
-VALUES 
-('exp_101', 'res_master_101', 'Apex Tech Solutions', 'Lead React Native Architect', '2022-01-01', 'Present', true, 'Architected cross-platform mobile suite serving 500k active users.', 1),
-('exp_102', 'res_master_101', 'CloudScale Global', 'Senior Systems Engineer', '2019-03-01', '2021-12-31', false, 'Designed distributed microservices handling 10k req/sec.', 2),
-('exp_103', 'res_master_101', 'DevCore Agency', 'Full-Stack Developer', '2017-06-01', '2019-02-28', false, 'Delivered 15 client web applications on Next.js & Python.', 3),
-('exp_104', 'res_master_101', 'InnoLab Incubator', 'Junior Software Analyst', '2015-01-15', '2017-05-30', false, 'Automated CI/CD deployment scripts and regression suites.', 4)
+INSERT INTO public.resume_work_experiences (id, resume_id, organization, role, start_date, end_date, key_responsibilities, sort_order)
+VALUES
+('exp_101', 'res_master_101', 'Apex Tech Solutions', 'Lead React Native Architect', '2022-01-01', NULL, 'Architected cross-platform mobile suite serving 500k active users.', 1),
+('exp_102', 'res_master_101', 'CloudScale Global', 'Senior Systems Engineer', '2019-03-01', '2021-12-31', 'Designed distributed microservices handling 10k req/sec.', 2),
+('exp_103', 'res_master_101', 'DevCore Agency', 'Full-Stack Developer', '2017-06-01', '2019-02-28', 'Delivered 15 client web applications on Next.js & Python.', 3),
+('exp_104', 'res_master_101', 'InnoLab Incubator', 'Junior Software Analyst', '2015-01-15', '2017-05-30', 'Automated CI/CD deployment scripts and regression suites.', 4)
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO public.resume_education_tertiary (id, resume_id, institution, qualification_name, nqf_level, year, completed, key_modules)
-VALUES 
-('edu_301', 'res_master_101', 'University of Pretoria', 'BSc Computer Science', 'Level 7', 2018, true, '["Data Structures","Algorithms","Database Systems"]'::jsonb),
-('edu_302', 'res_master_101', 'University of Witwatersrand', 'PostGrad Cert in Software Architecture', 'Level 8', 2020, true, '["Distributed Systems","Cloud Security"]'::jsonb),
-('edu_303', 'res_master_101', 'AWS Certification Authority', 'AWS Solutions Architect Associate', 'Level 7', 2022, true, '["Serverless","IAM","CloudFormation"]'::jsonb)
+INSERT INTO public.resume_education_tertiary (id, resume_id, institution, qualification_name, nqf_level, date_obtained, completed, key_modules)
+VALUES
+('edu_301', 'res_master_101', 'University of Pretoria', 'BSc Computer Science', 'Level 7', '2018-12-01', true, '["Data Structures","Algorithms","Database Systems"]'::jsonb),
+('edu_302', 'res_master_101', 'University of Witwatersrand', 'PostGrad Cert in Software Architecture', 'Level 8', '2020-12-01', true, '["Distributed Systems","Cloud Security"]'::jsonb),
+('edu_303', 'res_master_101', 'AWS Certification Authority', 'AWS Solutions Architect Associate', 'Level 7', '2022-06-01', true, '["Serverless","IAM","CloudFormation"]'::jsonb)
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO public.resume_references (id, resume_id, name, org, relation, phone, email, sort_order)
@@ -1330,13 +1339,13 @@ VALUES
     'res_master_101',
     'prof_demo_101',
     'Senior Mobile Architect Targeted CV',
-    '{"idNumber":false,"demographics":true}'::jsonb,
-    '{"sk_201":true,"sk_202":true,"sk_203":true,"sk_204":false}'::jsonb,
-    '{"exp_101":true,"resp_101":true,"resp_102":true,"ach_101":true,"sys_101":true,"exp_102":true,"exp_103":false,"exp_104":true}'::jsonb,
-    '{"edu_hs_1":true}'::jsonb,
-    '{"edu_301":true,"edu_302":true,"edu_303":false}'::jsonb,
-    '{"ref_401":true,"ref_402":false,"ref_403":true,"ref_404":true}'::jsonb,
-    '{"lang_501":true,"lang_502":true,"lang_503":false}'::jsonb,
+    '{"id_mask":true,"drivers_visible":true,"motor_visible":false}'::jsonb,
+    '{"tech_visible":true,"soft_visible":true,"sk_201":true,"sk_202":true,"sk_203":true,"sk_204":false}'::jsonb,
+    '{"exp_101":{"visible":true},"exp_102":{"visible":true},"exp_103":{"visible":false},"exp_104":{"visible":true}}'::jsonb,
+    '{"highschool":true}'::jsonb,
+    '{"edu_301":{"visible":true},"edu_302":{"visible":true},"edu_303":{"visible":false}}'::jsonb,
+    '{"ref_401":{"visible":true},"ref_402":{"visible":false},"ref_403":{"visible":true},"ref_404":{"visible":true}}'::jsonb,
+    '{"English":{"visible":true},"Afrikaans":{"visible":true},"isiZulu":{"visible":false},"lang_501":true,"lang_502":true,"lang_503":false}'::jsonb,
     CURRENT_TIMESTAMP
 ),
 (
@@ -1344,13 +1353,13 @@ VALUES
     'res_master_101',
     'prof_demo_101',
     'DevOps & Cloud Specialist Targeted CV',
-    '{"idNumber":true,"demographics":true}'::jsonb,
-    '{"sk_201":false,"sk_202":true,"sk_203":true,"sk_204":true}'::jsonb,
-    '{"exp_101":false,"exp_102":true,"resp_201":true,"ach_201":true,"exp_103":false,"exp_104":true}'::jsonb,
-    '{"edu_hs_1":true}'::jsonb,
-    '{"edu_301":true,"edu_302":false,"edu_303":true}'::jsonb,
-    '{"ref_401":false,"ref_402":true,"ref_403":true,"ref_404":false}'::jsonb,
-    '{"lang_501":true,"lang_502":false,"lang_503":true}'::jsonb,
+    '{"id_mask":false,"drivers_visible":true,"motor_visible":false}'::jsonb,
+    '{"tech_visible":true,"soft_visible":true,"sk_201":false,"sk_202":true,"sk_203":true,"sk_204":true}'::jsonb,
+    '{"exp_101":{"visible":false},"exp_102":{"visible":true},"exp_103":{"visible":false},"exp_104":{"visible":true}}'::jsonb,
+    '{"highschool":true}'::jsonb,
+    '{"edu_301":{"visible":true},"edu_302":{"visible":false},"edu_303":{"visible":true}}'::jsonb,
+    '{"ref_401":{"visible":false},"ref_402":{"visible":true},"ref_403":{"visible":true},"ref_404":{"visible":false}}'::jsonb,
+    '{"English":{"visible":true},"Afrikaans":{"visible":false},"isiZulu":{"visible":true},"lang_501":true,"lang_502":false,"lang_503":true}'::jsonb,
     CURRENT_TIMESTAMP
 )
 ON CONFLICT (id) DO NOTHING;

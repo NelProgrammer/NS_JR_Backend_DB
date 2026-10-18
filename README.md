@@ -18,7 +18,7 @@ docker compose up --build -d
 
 This will:
 1. Build the custom PostgreSQL image (`jobready_postgres_db:latest`) based on `postgres:15-alpine`.
-2. Automatically execute `init.sql` on first startup to initialize all 10 application database tables.
+2. Automatically execute `init.sql` on first startup to initialize application tables and demo seed rows.
 3. Expose PostgreSQL on `localhost:5432`.
 
 ---
@@ -41,18 +41,26 @@ postgresql://postgres:postgrespassword@localhost:5432/jobready_db
 
 ---
 
-## 📋 Database Tables (10 Tables)
+## 📋 Database Tables
 
 - `users`: Authentication credentials
 - `profiles`: User profiles & social OAuth links
-- `resumes`: Master CV documents & personal details
+- `resumes`: Master CV (includes `disability`, `addresses_json`)
 - `resume_work_experiences`: Employment history items
-- `resume_education_tertiary`: Tertiary academic qualifications
+- `resume_education_tertiary`: Tertiary academic qualifications (`date_obtained`)
+- `resume_education_professional_certifications`: Professional credentials
 - `resume_references`: Professional & character references
-- `targeted_resume`: Targeted derivative CV instances
+- `targeted_resume`: Targeted derivative CV visibility overlays
 - `candidate_index`: Recruiter query search index
-- `resume_ui_settings`: Front-end layout & UI preferences
+- `resume_ui_settings`: Section-partitioned UI preferences
+- `resume_timestamps`: Field-level sync clocks
 - `recruitment_shares`: Privacy & recruiter sharing controls
+
+Existing volumes (init.sql already ran) can apply `migrate_live.sql` with:
+
+```bash
+docker exec -i jobready_postgres_db psql -U postgres -d jobready_db < migrate_live.sql
+```
 
 ---
 
