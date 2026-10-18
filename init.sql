@@ -150,9 +150,9 @@ COMMENT ON COLUMN public.profiles.created_at IS 'Timestamp of account creation';
 --
 
 CREATE TABLE public.recruitment_shares (
-    id character varying NOT NULL PRIMARY KEY,
-    resume_id character varying NOT NULL REFERENCES public.resumes(id) ON DELETE CASCADE,
-    profile_id character varying NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    id character varying NOT NULL,
+    resume_id character varying NOT NULL,
+    profile_id character varying NOT NULL,
     allow_all boolean NOT NULL DEFAULT false,
     recruiter_ids jsonb DEFAULT '[]'::jsonb,
     personal_details_share jsonb NOT NULL DEFAULT '{}'::jsonb,
@@ -204,10 +204,10 @@ COMMENT ON COLUMN public.recruitment_shares.recruiter_ids IS 'Array of recruiter
 
 
 --
--- Name: COLUMN recruitment_shares.section_shares; Type: COMMENT; Schema: public; Owner: postgres
+-- Name: COLUMN recruitment_shares.personal_details_share; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.recruitment_shares.section_shares IS 'Map of section names to boolean indicating shareability';
+COMMENT ON COLUMN public.recruitment_shares.personal_details_share IS 'Per-field share flags for personal details';
 
 
 --
@@ -370,8 +370,8 @@ COMMENT ON COLUMN public.resume_references.sort_order IS 'Sorting priority';
 --
 
 CREATE TABLE public.resume_ui_settings (
-    resume_id character varying NOT NULL PRIMARY KEY REFERENCES public.resumes(id) ON DELETE CASCADE,
-    profile_id character varying NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    resume_id character varying NOT NULL,
+    profile_id character varying NOT NULL,
     layout character varying(50) NOT NULL DEFAULT 'professional',
     personal_details_settings jsonb NOT NULL DEFAULT '{"address_format":"bullet"}'::jsonb,
     skills_settings jsonb NOT NULL DEFAULT '{"tech_format":"bullet","soft_format":"bullet","certs_format":"bullet","systems_used_format":"bullet"}'::jsonb,
@@ -411,10 +411,10 @@ COMMENT ON COLUMN public.resume_ui_settings.profile_id IS 'Owner profile link';
 
 
 --
--- Name: COLUMN resume_ui_settings.settings_json; Type: COMMENT; Schema: public; Owner: postgres
+-- Name: COLUMN resume_ui_settings.personal_details_settings; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.resume_ui_settings.settings_json IS 'Client UI settings preferences';
+COMMENT ON COLUMN public.resume_ui_settings.personal_details_settings IS 'Address format and personal-details layout preferences';
 
 
 --
@@ -443,8 +443,8 @@ CREATE TABLE public.resume_work_experiences (
 );
 
 CREATE TABLE public.resume_education_professional_certifications (
-    id character varying NOT NULL PRIMARY KEY,
-    resume_id character varying NOT NULL REFERENCES public.resumes(id) ON DELETE CASCADE,
+    id character varying NOT NULL,
+    resume_id character varying NOT NULL,
     name character varying,
     institution character varying,
     date_obtained date,
@@ -997,6 +997,15 @@ ALTER TABLE ONLY public.targeted_resume
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
 
+ALTER TABLE ONLY public.resume_timestamps
+    ADD CONSTRAINT resume_timestamps_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY public.resume_timestamps
+    ADD CONSTRAINT resume_timestamps_resume_id_fkey FOREIGN KEY (resume_id) REFERENCES public.resumes(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY public.resume_timestamps
+    ADD CONSTRAINT resume_timestamps_profile_id_fkey FOREIGN KEY (profile_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
+
 
 --
 -- Name: ix_candidate_index_city; Type: INDEX; Schema: public; Owner: postgres
@@ -1193,7 +1202,7 @@ ALTER TABLE ONLY public.profiles
 --
 
 ALTER TABLE ONLY public.recruitment_shares
-    ADD CONSTRAINT recruitment_shares_profile_id_fkey FOREIGN KEY (profile_id) REFERENCES public.profiles(id);
+    ADD CONSTRAINT recruitment_shares_profile_id_fkey FOREIGN KEY (profile_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
 
 
 --
@@ -1201,7 +1210,14 @@ ALTER TABLE ONLY public.recruitment_shares
 --
 
 ALTER TABLE ONLY public.recruitment_shares
-    ADD CONSTRAINT recruitment_shares_resume_id_fkey FOREIGN KEY (resume_id) REFERENCES public.resumes(id);
+    ADD CONSTRAINT recruitment_shares_resume_id_fkey FOREIGN KEY (resume_id) REFERENCES public.resumes(id) ON DELETE CASCADE;
+
+
+ALTER TABLE ONLY public.resume_education_professional_certifications
+    ADD CONSTRAINT resume_education_professional_certifications_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY public.resume_education_professional_certifications
+    ADD CONSTRAINT resume_education_professional_certifications_resume_id_fkey FOREIGN KEY (resume_id) REFERENCES public.resumes(id) ON DELETE CASCADE;
 
 
 --
