@@ -18,7 +18,7 @@ docker compose up --build -d
 
 This will:
 1. Build the custom PostgreSQL image (`jobready_postgres_db:latest`) based on `postgres:15-alpine`.
-2. Automatically execute `init.sql` on first startup to initialize application tables and demo seed rows.
+2. Automatically execute `init.sql` **once** on first startup (empty volume only) to create application tables. It does not insert demo people or CVs.
 3. Expose PostgreSQL on `localhost:5432`.
 
 ---
@@ -38,6 +38,14 @@ Connection String:
 ```text
 postgresql://postgres:postgrespassword@localhost:5432/jobready_db
 ```
+
+### What `init.sql` is allowed to do
+
+Postgres runs files in `docker-entrypoint-initdb.d` as the superuser **only when the data directory is empty**. There is no app token, no `jobready_app` role check, and no Job 2 mapper. That is why this file is schema-only: a first boot must not write candidate rows behind the API.
+
+Demo data: `seed/` in this repo (CSV → `POST /auth/signup` and `POST /sync/push` on Python or Node).
+
+Shape changes after first boot: `ddl_function` with `DDL_FUNCTION_TOKEN` and an admin role — not a second copy of `init.sql` inserts.
 
 ---
 
