@@ -8,7 +8,7 @@ from pathlib import Path
 
 CSV_DIR = Path(__file__).resolve().parent / "csv"
 PASSWORD = "SeedPass1!"
-LAST_MODIFIED = 1710000000
+LAST_MODIFIED = 1710000000000
 
 
 def alice_master() -> dict:

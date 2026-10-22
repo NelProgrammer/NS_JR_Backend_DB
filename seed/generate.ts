@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const CSV_DIR = join(dirname(fileURLToPath(import.meta.url)), "csv");
 const PASSWORD = "SeedPass1!";
-const LAST_MODIFIED = 1710000000;
+const LAST_MODIFIED = 1710000000000;
 
 function aliceMaster() {
   return {
