@@ -229,7 +229,7 @@ CREATE TABLE public.resume_education_tertiary (
     nqf_level character varying,
     date_obtained date,
     completed boolean NOT NULL,
-    key_modules jsonb NOT NULL
+    key_modules jsonb DEFAULT '[]'::jsonb NOT NULL
 );
 
 
@@ -288,7 +288,7 @@ COMMENT ON COLUMN public.resume_education_tertiary.completed IS 'Completion stat
 -- Name: COLUMN resume_education_tertiary.key_modules; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.resume_education_tertiary.key_modules IS 'Modules or courses studied';
+COMMENT ON COLUMN public.resume_education_tertiary.key_modules IS 'NamedItem[] {id, name, text, visible} key modules';
 
 
 --
@@ -436,9 +436,9 @@ CREATE TABLE public.resume_work_experiences (
     organization character varying,
     department character varying,
     role character varying,
-    key_responsibilities text,
-    systems_used character varying,
-    achievements text,
+    key_responsibilities jsonb DEFAULT '[]'::jsonb NOT NULL,
+    systems_used jsonb DEFAULT '[]'::jsonb NOT NULL,
+    achievements jsonb DEFAULT '[]'::jsonb NOT NULL,
     sort_order integer NOT NULL
 );
 
@@ -509,21 +509,21 @@ COMMENT ON COLUMN public.resume_work_experiences.role IS 'Job title or role';
 -- Name: COLUMN resume_work_experiences.key_responsibilities; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.resume_work_experiences.key_responsibilities IS 'Responsibilities markdown / summary';
+COMMENT ON COLUMN public.resume_work_experiences.key_responsibilities IS 'LineItem[] {id, text, name, visible} for this job';
 
 
 --
 -- Name: COLUMN resume_work_experiences.systems_used; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.resume_work_experiences.systems_used IS 'Comma-separated lists of tools/software used';
+COMMENT ON COLUMN public.resume_work_experiences.systems_used IS 'LineItem[] {id, text, name, visible} for systems used on this job';
 
 
 --
 -- Name: COLUMN resume_work_experiences.achievements; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.resume_work_experiences.achievements IS 'Job accomplishments text';
+COMMENT ON COLUMN public.resume_work_experiences.achievements IS 'LineItem[] {id, text, name, visible} for achievements on this job';
 
 
 --
@@ -753,7 +753,7 @@ COMMENT ON COLUMN public.resumes.languages_json IS 'Languages and proficiency ar
 -- Name: COLUMN resumes.skills_json; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.resumes.skills_json IS 'Technical & soft skills CSV, certifications';
+COMMENT ON COLUMN public.resumes.skills_json IS 'Skill bags of named items: Tech, Soft, NonAcadCerts, SystemsUsed';
 
 
 --
@@ -786,13 +786,34 @@ CREATE TABLE public.targeted_resume (
     primary_resume_id character varying NOT NULL,
     profile_id character varying NOT NULL,
     name character varying NOT NULL,
-    personal_details_visibility jsonb NOT NULL,
-    skills_visibility jsonb NOT NULL,
-    experience_visibility jsonb NOT NULL,
-    education_visibility jsonb NOT NULL,
+    -- 'main' = Main/Master resume config (POPIA toggles active; standard toggles locked ON)
+    -- 'targeted' = Targeted/derivative resume config (all toggles fully active)
+    config_type character varying(16) NOT NULL DEFAULT 'targeted',
+    -- Personal Details visibility flags.
+    -- Standard fields (Targeted only, all locked ON for Main):
+    --   pd_first_name, pd_middle_name, pd_maiden_name, pd_surname, pd_prefix,
+    --   pd_email, pd_phone_cell, pd_phone_home, pd_linkedin, pd_website,
+    --   pd_professional_summary, pd_licensing, pd_demographics, pd_criminal
+    -- Language rows (Targeted only): lang_<id> -> boolean
+    -- POPIA masks (ALWAYS editable on BOTH Main and Targeted):
+    --   idMask -> boolean  (true = show DOB portion only: YYMMDD ****)
+    --   addr_mask_street_number_<addr_id> -> boolean  (true = hide street number)
+    --   addr_mask_street_name_<addr_id>   -> boolean  (true = hide street name)
+    personal_details_visibility jsonb NOT NULL DEFAULT '{}'::jsonb,
+    -- Skills: category toggles (skills_tech, skills_soft, skills_non_acad_certs, skills_systems_used)
+    --         item toggles: tech_<id>, soft_<id>, ncert_<id>, sys_skill_<id> -> boolean
+    skills_visibility jsonb NOT NULL DEFAULT '{}'::jsonb,
+    -- Experience: job rows exp_<id>; sub-items resp_<id>, sys_<id>, ach_<id> -> boolean
+    experience_visibility jsonb NOT NULL DEFAULT '{}'::jsonb,
+    -- Education: edu_highschool, highschool_name; cert rows cert_<id>;
+    --            cert sensitive fields cert_number_<id>, cert_date_<id> -> boolean
+    education_visibility jsonb NOT NULL DEFAULT '{}'::jsonb,
+    -- Tertiary: qualification rows tert_<id>; tert_date (section-wide); tert_key_modules -> boolean
     tertiary_education_visibility jsonb NOT NULL DEFAULT '{}'::jsonb,
-    references_visibility jsonb NOT NULL,
-    languages_visibility jsonb NOT NULL,
+    -- References: referee rows ref_<id>; ref_surname_<id>, ref_contact_<id> -> boolean
+    references_visibility jsonb NOT NULL DEFAULT '{}'::jsonb,
+    -- Languages: language rows lang_<id> -> boolean
+    languages_visibility jsonb NOT NULL DEFAULT '{}'::jsonb,
     last_modified timestamp without time zone NOT NULL
 );
 
