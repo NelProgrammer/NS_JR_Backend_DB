@@ -24,7 +24,12 @@ def alice_master() -> dict:
             ],
         },
         "professional summary": "Seeded through Job 2, not init.sql.",
-        "Skills": {"Tech": [{"id": "sk_a1", "name": "Python", "visible": True}]},
+        "Skills": {
+            "Tech": [{"id": "sk_a1", "name": "Python", "text": "Python", "howObtained": "Course", "yearsInUse": "", "visible": True}],
+            "Soft": [{"id": "soft_a1", "name": "Problem Solving", "text": "Problem Solving", "visible": True}],
+            "NonAcadCerts": [{"id": "ncert_a1", "name": "Emergency First Aid at Work (Level 1)", "text": "Emergency First Aid at Work (Level 1)", "provider": "St John", "yearObtained": "2021", "visible": True}],
+            "SystemsUsed": [{"id": "sys_a1", "name": "Git", "text": "Git", "yearsInUse": "5", "visible": True}],
+        },
         "experience": [
             {
                 "id": "exp_a1",
@@ -32,7 +37,15 @@ def alice_master() -> dict:
                 "Role": "Lead Architect",
                 "Start Date": "2020-01-01",
                 "End Date": "2021-12-31",
-                "Key Responsibilities": "Designed cloud backend architecture.",
+                "Key Responsibilities": [
+                    {"id": "resp_a1", "text": "Designed cloud backend architecture.", "name": "Designed cloud backend architecture.", "visible": True}
+                ],
+                "Achievements": [
+                    {"id": "ach_a1", "text": "Decreased API latency by 45% using Redis caching.", "name": "Decreased API latency by 45% using Redis caching.", "visible": True}
+                ],
+                "Systems Used": [
+                    {"id": "sys_exp_a1", "name": "FastAPI", "text": "FastAPI", "visible": True}
+                ],
             }
         ],
         "education": {
@@ -44,7 +57,9 @@ def alice_master() -> dict:
                     "Qualification Name": "B.Sc. Computer Science",
                     "Year": "2018-12-01",
                     "Completed": True,
-                    "Key Modules": ["Data Structures"],
+                    "Key Modules": [
+                        {"id": "mod_a1", "name": "Data Structures", "text": "Data Structures", "visible": True}
+                    ],
                 }
             ],
         },
